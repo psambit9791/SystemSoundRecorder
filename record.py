@@ -3,7 +3,6 @@ from datetime import datetime
 import pyaudio
 import wave
 import argparse
-from pydub import AudioSegment
 
 from pynput import keyboard
 import pickle
@@ -12,6 +11,9 @@ import sys
 
 
 root_folder = "recordings"
+current_folder = None
+
+
 p = pyaudio.PyAudio()
 stream = None
 frames = []
@@ -24,9 +26,8 @@ CHUNK = 512
 RECORD_SECONDS = 2
 WAVE_OUTPUT_FILENAME = None
 
+
 START_TIME = None
-
-
 is_recording = True
 episode = 30 # how long to record for each session
 
@@ -58,6 +59,7 @@ def select_recording_device():
                 rate=RATE, input=True, input_device_index = default_input,
                 frames_per_buffer=CHUNK)
 
+
 def record_audio():
     global RECORD_SECONDS, RATE, CHUNK, FORMAT, CHANNELS, START_TIME, WAVE_OUTPUT_FILENAME
     global stream, frames, listener
@@ -83,14 +85,6 @@ def record_audio():
 
 def write_to_wav():
     global p, frames
-    # pkl_file = WAVE_OUTPUT_FILENAME.replace(".wav", ".pkl")
-    # list_of_frames = []
-    # with open(filename, 'rb') as fp:
-    #     try:
-    #         while True:
-    #             list_of_frames.append(pickle.load(fp))
-    #     except EOFError:
-    #         pass
     waveFile = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
     waveFile.setnchannels(CHANNELS)
     waveFile.setsampwidth(p.get_sample_size(FORMAT))
@@ -99,16 +93,26 @@ def write_to_wav():
     frames = []
     waveFile.close()
 
+
 def generate_filename(time_value):
     filename = datetime.now().strftime("%Y-%m-%dT%H-%M-%SZ") + ".wav"
-    return os.path.join(root_folder, filename)
+    return os.path.join(root_folder, current_folder, filename)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Record data from websites')
-    parser.add_argument('--episode', metavar='int', default=30, 
+    parser.add_argument('--episode', metavar='episode', default=30, type=int,
             help='How long should individual recordings last for (in minutes)?')
     args = parser.parse_args()
     episode = args.episode
+
+    current_folder = datetime.now().strftime("%Y-%m-%dT%H-%M-%SZ")
+
+    try:
+        os.makedirs(os.path.join(root_folder, current_folder))
+    except OSError:
+        print("Folder already exists.")
+
 
     START_TIME = datetime.now()
     WAVE_OUTPUT_FILENAME = generate_filename(START_TIME)
