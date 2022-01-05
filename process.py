@@ -40,8 +40,10 @@ def split_wavs(current_folder):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Merge partitioned recorded wav files and split by silence after.')
-    parser.add_argument('--recordings', metavar='recording folder', required=True, type=str,
+    parser.add_argument('--recordings', metavar='2022-01-05T10-06-39Z/', required=True, type=str,
             help='The folder where the partitioned wav files to be joined are stored.')
+    parser.add_argument('--keep', action='store_true',
+            help="Don't delete the original recordings and the merged file.")
     args = parser.parse_args()
     folder = args.recordings
     recordings_folder = os.path.join("recordings", folder)
@@ -54,5 +56,7 @@ if __name__ == "__main__":
 
     merged_filename = os.path.join(root_folder, folder) + ".wav"
     merge_wavs(recordings_folder)
-    # remove_folder_and_content(recordings_folder)
     split_wavs(current_folder)
+    if not args.keep:
+        remove_folder_and_content(recordings_folder)
+        os.remove(merged_filename)

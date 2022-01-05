@@ -101,7 +101,7 @@ def generate_filename(time_value):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Record data from websites')
-    parser.add_argument('--episode', metavar='episode', default=30, type=int,
+    parser.add_argument('--episode', metavar='N', default=30, type=int,
             help='How long should individual recordings last for (in minutes)?')
     args = parser.parse_args()
     episode = args.episode
